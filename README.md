@@ -1,4 +1,4 @@
-# Password Pusher Pro - Helm Charts
+# Password Pusher Pro - Helm Charts (Beta)
 
 Official Helm charts for deploying [Password Pusher Pro](https://pwpush.com) on Kubernetes.
 
