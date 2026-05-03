@@ -376,6 +376,104 @@ spec:
 
 6. **Enable Auto-Sync with Caution**: The encryption keys secret should use `helm.sh/resource-policy: keep` (which the chart already does), preventing accidental deletion during `helm uninstall`
 
+## Using Kustomize with Argo CD
+
+Kustomize can be combined with Helm in Argo CD for advanced customizations that the chart doesn't expose via values.
+
+### When to Use Kustomize + Helm
+
+| Scenario | Helm Only | Helm + Kustomize |
+|----------|-----------|------------------|
+| Standard configuration | ✅ Recommended | Overkill |
+| Adding organizational labels | ❌ Not possible | ✅ Ideal |
+| Injecting sidecars | ❌ Not possible | ✅ Ideal |
+| Patching security contexts | ⚠️ Limited | ✅ Full control |
+| Adding network policies | ❌ Not possible | ✅ Ideal |
+
+### Method 1: Post-Renderer Plugin
+
+Create a ConfigMap with a Configuration Management Plugin:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kustomized-helm-cmp
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: argocd
+data:
+  plugin.yaml: |
+    apiVersion: argoproj.io/v1alpha1
+    kind: ConfigManagementPlugin
+    metadata:
+      name: kustomized-helm
+    spec:
+      version: v1.0
+      generate:
+        command: [sh, -c]
+        args:
+          - |
+            helm template "$ARGOCD_APP_NAME" . \
+              --namespace "$ARGOCD_APP_NAMESPACE" \
+              --values values.yaml > helm-output.yaml &&
+            kustomize build . &&
+            rm helm-output.yaml
+```
+
+Then reference it in your Application:
+
+```yaml
+spec:
+  source:
+    plugin:
+      name: kustomized-helm
+```
+
+### Method 2: Native Kustomize with Helm
+
+Enable Helm support in Argo CD's Kustomize:
+
+```bash
+kubectl patch configmap argocd-cm -n argocd --type merge \
+  -p '{"data":{"kustomize.buildOptions":"--enable-helm"}}'
+```
+
+Then use a `kustomization.yaml` with `helmCharts`:
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+helmCharts:
+  - name: pwpush-pro
+    repo: https://apnotic.github.io/pwpush-pro-helm
+    version: 0.1.1
+    releaseName: pwpush-pro
+    namespace: pwpush
+    valuesFile: values.yaml
+
+patches:
+  - path: patches/add-labels.yaml
+```
+
+And the Argo CD Application:
+
+```yaml
+spec:
+  source:
+    path: overlays/production
+    # No plugin needed - uses native Kustomize
+```
+
+### Complete Example
+
+See the [Kustomize Guide](./KUSTOMIZE.md) and [examples/kustomize/](./examples/kustomize/) directory for:
+- Post-renderer scripts
+- Common patches (labels, annotations, sidecars, network policies)
+- Argo CD Application examples
+- Security hardening examples
+
 ## Troubleshooting
 
 ### Issue: Secrets are regenerated on every sync
@@ -415,3 +513,5 @@ imagePullSecrets:
 - [Argo CD Helm Guide](https://argo-cd.readthedocs.io/en/latest/user-guide/helm/)
 - [Password Pusher Pro Documentation](https://docs.pwpush.com)
 - [Helm Chart README](./README.md)
+- [Kustomize Integration Guide](./KUSTOMIZE.md)
+- [Kustomize Examples](./examples/kustomize/)

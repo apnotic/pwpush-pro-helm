@@ -1,0 +1,96 @@
+# Helm Values for Password Pusher Pro
+#
+# This file contains standard Helm values for the pwpush-pro chart.
+# Use this for configuration that the chart exposes via values.
+#
+# For customizations that Helm doesn't expose, use the patches/ directory
+# and reference them in kustomization.yaml.
+
+# License configuration (required)
+license:
+  key: "your-license-key"
+  region: "your-region"
+
+# Reference the pre-created secret (see ARGOCD.md for secret creation)
+secrets:
+  existingSecretName: pwpush-pro-secrets
+
+# Edition configuration
+edition: starter  # starter, advanced, or enterprise
+
+# Image configuration
+# Note: The repository varies based on your licensed edition:
+# - Starter:    registry.apnotic.com/pwpush-pro
+# - Advanced:   registry.apnotic.com/pwpush-pro-advanced
+# - Enterprise: registry.apnotic.com/pwpush-pro-enterprise
+image:
+  repository: registry.apnotic.com/pwpush-pro
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Image pull secret for private registry
+imagePullSecrets:
+  - name: regcred
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+    # external-dns.alpha.kubernetes.io/hostname: "pwpush.example.com"
+  hosts:
+    - host: pwpush.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: pwpush-tls
+      hosts:
+        - pwpush.example.com
+
+# Resource configuration
+# Note: These are the standard Helm-exposed resource settings.
+# For more advanced patching, see patches/custom-resource-limits.yaml
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+# Storage configuration
+storage:
+  size: 10Gi
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+
+# Database configuration (Enterprise edition)
+database:
+  type: sqlite  # sqlite or postgresql
+  # host: ""      # For external PostgreSQL
+  # port: 5432
+  # name: pwpush-pro
+  # user: pwpush-pro
+
+# PostgreSQL subchart (Enterprise with bundled PostgreSQL)
+postgresql:
+  enabled: false
+
+# Autoscaling configuration
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+
+# Additional environment variables (non-sensitive)
+extraEnv: {}
+  # RAILS_LOG_LEVEL: debug
+
+# Additional secret environment variables (sensitive)
+# Use this for API keys, passwords, etc.
+extraSecretEnv: {}
+  # AWS_ACCESS_KEY_ID: "your-access-key"

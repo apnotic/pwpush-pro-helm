@@ -83,6 +83,16 @@ spec:
           existingSecretName: pwpush-pro-secrets  # Pre-create this secret
 ```
 
+## Advanced Customization with Kustomize
+
+For customizations beyond what Helm values expose (adding labels, annotations, sidecars, network policies), use Kustomize with the Helm chart. See the [Kustomize Guide](KUSTOMIZE.md) and [examples/kustomize/](examples/kustomize/).
+
+Common Kustomize use cases:
+- Adding organizational labels for cost allocation
+- Injecting monitoring sidecars (Datadog, New Relic)
+- Adding network policies for pod-to-pod communication control
+- Security hardening patches
+
 ## Editions
 
 | Feature | Starter | Advanced | Enterprise |
@@ -230,8 +240,12 @@ See the [examples/](examples/) directory for ready-to-use values files:
 - `advanced-external-storage.yaml` -- Advanced with S3 storage
 - `enterprise-ha.yaml` -- Enterprise HA with bundled PostgreSQL
 - `enterprise-external-db.yaml` -- Enterprise with external PostgreSQL (RDS, Cloud SQL, etc.)
+- `argocd-application.yaml` -- Argo CD Application manifest
+- `kustomize/` -- Kustomize patches and configurations for advanced customizations
 
-For Argo CD Application manifests, see the [Argo CD Guide](ARGOCD.md).
+For detailed guides, see:
+- [Argo CD Guide](ARGOCD.md) -- Argo CD specific documentation
+- [Kustomize Guide](KUSTOMIZE.md) -- Kustomize integration documentation
 
 ## Support
 

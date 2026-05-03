@@ -1,0 +1,43 @@
+# Add Organizational Labels to All Resources
+#
+# This patch adds labels commonly used for cost allocation, ownership,
+# and environment identification. Cloud providers (AWS, GCP, Azure)
+# can use these labels for cost reporting and chargeback.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pwpush-pro
+  labels:
+    # Add your organizational labels here
+    cost-center: "12345"
+    department: "engineering"
+    environment: production
+    owner: "platform-team"
+    project: "security-tools"
+    team: "security"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pwpush-pro
+  labels:
+    cost-center: "12345"
+    department: "engineering"
+    environment: production
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pwpush-pro-storage
+  labels:
+    cost-center: "12345"
+    environment: production
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pwpush-pro
+  labels:
+    cost-center: "12345"
+    environment: production

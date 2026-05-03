@@ -1,0 +1,53 @@
+# Custom Resource Limits
+#
+# This patch overrides the resource limits for the pwpush-pro deployment.
+# Use this when you need more granular control than the standard Helm values provide.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pwpush-pro
+spec:
+  # Override replica count (if not using HPA)
+  replicas: 3
+
+  template:
+    spec:
+      containers:
+        - name: pwpush-pro
+          # Fine-tuned resource allocation
+          resources:
+            limits:
+              cpu: 1000m      # 1 CPU core
+              memory: 1Gi     # 1 GB RAM
+            requests:
+              cpu: 250m       # 0.25 CPU cores
+              memory: 512Mi   # 512 MB RAM
+
+          # Add extra environment variables not in values.yaml
+          env:
+            - name: RAILS_MAX_THREADS
+              value: "10"
+            - name: RAILS_WORKERS
+              value: "2"
+            - name: WEB_CONCURRENCY
+              value: "2"
+
+      # Node affinity for running on specific node pools
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                      - general-purpose
+
+      # Tolerations for running on tainted nodes
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "general"
+          effect: "NoSchedule"
