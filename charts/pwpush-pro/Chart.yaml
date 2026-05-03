@@ -6,7 +6,7 @@ version: 0.1.1
 appVersion: "latest"
 
 home: https://pwpush.com
-icon: https://pwpush.com/logo.png
+icon: https://eu.pwpush.com/icon.png
 sources:
   - https://github.com/apnotic/pwpush-pro-helm
 
