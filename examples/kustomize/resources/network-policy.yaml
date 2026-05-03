@@ -1,0 +1,115 @@
+# Network Policy for Pod-to-Pod Communication Control
+#
+# This is a NEW RESOURCE (not a patch). Kustomize patches can only modify existing
+# resources, but NetworkPolicy is an additional resource that doesn't exist in the
+# base Helm output. Add it to the `resources:` section of your kustomization.yaml.
+#
+# This NetworkPolicy restricts ingress and egress traffic for the pwpush-pro
+# application, enhancing security by limiting communication to only necessary services.
+#
+# Note: Requires a CNI plugin that supports Network Policies (Calico, Cilium, Weave, etc.)
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pwpush-pro
+spec:
+  # Select the pwpush-pro pods
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: pwpush-pro
+
+  # Apply to both ingress and egress
+  policyTypes:
+    - Ingress
+    - Egress
+
+  # Ingress rules - who can talk TO pwpush-pro
+  ingress:
+    # Allow HTTP traffic from the ingress controller namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+        # Alternative: allow from specific namespaces by label
+        # - namespaceSelector:
+        #     matchLabels:
+        #       ingress-access: "true"
+      ports:
+        - protocol: TCP
+          port: 80
+
+    # Allow Prometheus scraping from monitoring namespace
+    # - from:
+    #     - namespaceSelector:
+    #         matchLabels:
+    #           name: monitoring
+    #   ports:
+    #     - protocol: TCP
+    #       port: 8080  # Metrics port
+
+  # Egress rules - where pwpush-pro can talk TO
+  egress:
+    # Allow DNS resolution (required for service discovery)
+    - to:
+        - namespaceSelector: {}  # All namespaces
+      ports:
+        - protocol: TCP
+          port: 53
+        - protocol: UDP
+          port: 53
+
+    # Allow HTTPS egress for external API calls (webhooks, etc.)
+    - to: []
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow HTTP egress (if needed for specific integrations)
+    # - to: []
+    #   ports:
+    #     - protocol: TCP
+    #       port: 80
+
+    # Allow PostgreSQL access (if using bundled or external PostgreSQL)
+    # Uncomment and adjust based on your PostgreSQL location
+    # - to:
+    #     - podSelector:
+    #         matchLabels:
+    #           app.kubernetes.io/name: postgresql
+    #       namespaceSelector:
+    #         matchLabels:
+    #           name: pwpush  # PostgreSQL namespace
+    #   ports:
+    #     - protocol: TCP
+    #       port: 5432
+
+    # Allow access to external PostgreSQL by IP/CIDR
+    # - to:
+    #     - ipBlock:
+    #         cidr: 10.0.0.0/8  # Adjust to your DB subnet
+    #   ports:
+    #     - protocol: TCP
+    #       port: 5432
+
+    # Allow Redis access (if using external Redis)
+    # - to:
+    #     - podSelector:
+    #         matchLabels:
+    #           app.kubernetes.io/name: redis
+    #   ports:
+    #     - protocol: TCP
+    #       port: 6379
+
+---
+# Optional: Default deny policy for the namespace
+# This ensures only explicitly allowed traffic can flow
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: default-deny-all
+# spec:
+#   podSelector: {}  # All pods
+#   policyTypes:
+#     - Ingress
+#     - Egress
