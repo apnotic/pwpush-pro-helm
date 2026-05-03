@@ -210,7 +210,8 @@ data:
         command: [sh, -c]
         args:
           - |
-            helm template "$ARGOCD_APP_NAME" . \
+            helm template "$ARGOCD_APP_NAME" pwpush-pro/pwpush-pro \
+              --repo https://apnotic.github.io/pwpush-pro-helm \
               --namespace "$ARGOCD_APP_NAMESPACE" \
               --values values.yaml \
               --include-crds > helm-output.yaml &&

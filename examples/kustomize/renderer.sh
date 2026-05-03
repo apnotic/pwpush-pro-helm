@@ -17,16 +17,19 @@ set -e
 KUSTOMIZATION_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$KUSTOMIZATION_DIR"
 
-# Create a unique temp file in the current directory to avoid race conditions
+# Create unique temp files to avoid race conditions
 HELM_OUTPUT=$(mktemp ./helm-output.XXXXXX.yaml)
 HELM_OUTPUT_NAME=$(basename "$HELM_OUTPUT")
+KUSTOMIZATION_BAK=$(mktemp ./kustomization.yaml.XXXXXX.bak)
+KUSTOMIZATION_BAK_NAME=$(basename "$KUSTOMIZATION_BAK")
 
-# Cleanup function to remove temp file and restore original kustomization.yaml
+# Cleanup function to remove temp files and restore original kustomization.yaml
 cleanup() {
     rm -f "$HELM_OUTPUT"
-    # Restore original kustomization.yaml if backup exists
-    if [ -f kustomization.yaml.bak ]; then
-        mv kustomization.yaml.bak kustomization.yaml
+    rm -f "$KUSTOMIZATION_BAK"
+    # Restore original kustomization.yaml if our specific backup exists
+    if [ -f "$KUSTOMIZATION_BAK_NAME" ] && [ -f kustomization.yaml ]; then
+        mv "$KUSTOMIZATION_BAK_NAME" kustomization.yaml
     fi
 }
 trap cleanup EXIT
@@ -35,7 +38,9 @@ trap cleanup EXIT
 cat - > "$HELM_OUTPUT"
 
 # Temporarily modify kustomization.yaml to use the unique filename
-sed -i.bak "s/helm-output.yaml/$HELM_OUTPUT_NAME/" kustomization.yaml
+# Use a unique backup file to avoid race conditions with concurrent runs
+cp kustomization.yaml "$KUSTOMIZATION_BAK"
+sed -i "s/helm-output.yaml/$HELM_OUTPUT_NAME/" kustomization.yaml
 
 # Run Kustomize build
 kustomize build .

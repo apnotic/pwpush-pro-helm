@@ -16,6 +16,18 @@ metadata:
     owner: "platform-team"
     project: "security-tools"
     team: "security"
+spec:
+  template:
+    metadata:
+      labels:
+        # These labels are applied to the Pods created by the Deployment
+        # Essential for cost allocation and monitoring that inspects pod labels
+        cost-center: "12345"
+        department: "engineering"
+        environment: production
+        owner: "platform-team"
+        project: "security-tools"
+        team: "security"
 ---
 apiVersion: v1
 kind: Service
