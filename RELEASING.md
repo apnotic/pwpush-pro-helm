@@ -4,12 +4,10 @@ This document explains how to release new versions of the Password Pusher Pro He
 
 ## How Releases Work
 
-Releases are automated via the [chart-releaser GitHub Action](.github/workflows/release.yml). When changes are pushed to `main`, the workflow:
+Releases are fully automated via GitHub Actions:
 
-1. Detects charts with version changes in `Chart.yaml`
-2. Packages the chart into a `.tgz` archive
-3. Creates a GitHub Release with the packaged chart
-4. Updates the `index.yaml` on the `gh-pages` branch
+1. **[CI workflow](.github/workflows/ci.yml)** runs on every push and PR -- lints and template-renders all three tiers (Starter, Advanced, Enterprise)
+2. **[Release workflow](.github/workflows/release.yml)** runs on push to `main` -- detects version changes in `Chart.yaml`, packages the chart, creates a GitHub Release, and updates `index.yaml` on the `gh-pages` branch
 
 Customers consume the chart via:
 
@@ -19,57 +17,41 @@ helm repo add pwpush-pro https://apnotic.github.io/pwpush-pro-helm
 
 ## Release Process
 
-### 1. Update the chart version
+### 1. Bump the chart version
 
 Edit `charts/pwpush-pro/Chart.yaml` and bump the `version` field following [Semantic Versioning](https://semver.org/):
 
-- **Patch** (0.1.0 -> 0.1.1): Bug fixes, documentation updates, dependency bumps
-- **Minor** (0.1.0 -> 0.2.0): New features, new values, non-breaking template changes
-- **Major** (0.1.0 -> 1.0.0): Breaking changes to values schema or template behavior
+| Bump | When | Example |
+|------|------|---------|
+| **Patch** | Bug fixes, doc updates, dependency bumps | 0.1.0 -> 0.1.1 |
+| **Minor** | New features, new values, non-breaking changes | 0.1.0 -> 0.2.0 |
+| **Major** | Breaking changes to values schema or behavior | 0.1.0 -> 1.0.0 |
 
-```yaml
-version: 0.2.0      # Chart version (bump this)
-appVersion: "latest" # Update if tied to a specific app release
-```
+If the release corresponds to a specific container image tag, also update `appVersion`.
 
-### 2. Update appVersion (if applicable)
+### 2. Update dependencies (if needed)
 
-If the release corresponds to a specific Password Pusher Pro container image tag, update `appVersion`:
-
-```yaml
-appVersion: "2.5.0"
-```
-
-### 3. Update dependencies (if needed)
-
-If the Bitnami PostgreSQL subchart version changed:
+Only required when changing the Bitnami PostgreSQL subchart version in `Chart.yaml`:
 
 ```bash
 helm dependency update charts/pwpush-pro
 ```
 
-This updates `Chart.lock` and downloads the new subchart `.tgz`.
-
-### 4. Validate locally
-
-```bash
-make lint      # Lint all three tiers
-make template  # Dry-run template rendering for all tiers
-```
-
-### 5. Commit and push
+### 3. Commit and push
 
 ```bash
 git add -A
-git commit -m "Release chart version 0.2.0"
+git commit -m "Release chart version X.Y.Z"
 git push
 ```
 
-### 6. Verify the release
+CI will automatically lint and template-render all three tiers. If CI fails, fix the issue and push again -- the release workflow only runs after CI passes.
 
-- Check [GitHub Actions](https://github.com/apnotic/pwpush-pro-helm/actions) for a successful "Release Charts" run
-- Verify the new [GitHub Release](https://github.com/apnotic/pwpush-pro-helm/releases) was created
-- Confirm customers can pull the new version:
+### 4. Verify
+
+- Check [GitHub Actions](https://github.com/apnotic/pwpush-pro-helm/actions) for green CI and Release runs
+- Confirm the new [GitHub Release](https://github.com/apnotic/pwpush-pro-helm/releases) was created
+- Optionally verify from the customer side:
 
 ```bash
 helm repo update
@@ -82,13 +64,11 @@ When a new Password Pusher Pro container image is published to `registry.apnotic
 
 1. Update `appVersion` in `Chart.yaml` to match the new image tag
 2. Bump the chart `version` (at minimum a patch bump)
-3. Follow the release process above
+3. Commit and push
 
 ## Rollback
 
-If a release has issues:
-
-- The previous chart version remains available in the Helm repo
+- Previous chart versions remain available in the Helm repo
 - Customers can pin to a specific version: `helm install ... --version 0.1.0`
 - To remove a broken release, delete the GitHub Release and re-run the workflow
 
