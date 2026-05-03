@@ -220,7 +220,7 @@ data:
         find:
           command: [sh, -c]
           args:
-            - test -f kustomization.yaml && test -f Chart.yaml
+            - test -f kustomization.yaml
 ```
 
 Apply it:
@@ -406,8 +406,8 @@ kustomize build --enable-helm overlays/production
 # Apply to cluster
 kustomize build --enable-helm overlays/production | kubectl apply -f -
 
-# Or using kubectl directly
-kubectl apply -k overlays/production --enable-helm
+# Note: kubectl apply -k does not support --enable-helm flag
+# Use kustomize build --enable-helm | kubectl apply -f - instead
 ```
 
 ### Argo CD with Native Helm Support

@@ -1,8 +1,11 @@
 # Network Policy for Pod-to-Pod Communication Control
 #
-# This patch creates a NetworkPolicy that restricts ingress and egress traffic
-# for the pwpush-pro application. This enhances security by limiting communication
-# to only necessary services.
+# This is a NEW RESOURCE (not a patch). Kustomize patches can only modify existing
+# resources, but NetworkPolicy is an additional resource that doesn't exist in the
+# base Helm output. Add it to the `resources:` section of your kustomization.yaml.
+#
+# This NetworkPolicy restricts ingress and egress traffic for the pwpush-pro
+# application, enhancing security by limiting communication to only necessary services.
 #
 # Note: Requires a CNI plugin that supports Network Policies (Calico, Cilium, Weave, etc.)
 

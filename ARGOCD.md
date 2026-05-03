@@ -419,6 +419,11 @@ data:
               --values values.yaml > helm-output.yaml &&
             kustomize build . &&
             rm helm-output.yaml
+      discover:
+        find:
+          command: [sh, -c]
+          args:
+            - test -f kustomization.yaml
 ```
 
 Then reference it in your Application:
