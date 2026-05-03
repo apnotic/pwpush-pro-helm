@@ -69,6 +69,20 @@ helm install my-push pwpush-pro/pwpush-pro \
 
 Note: The `postgresql.auth.existingSecret` value follows the pattern `<release-name>-pwpush-pro`. Replace `my-push` with your chosen release name.
 
+## GitOps / Argo CD
+
+For GitOps deployments with Argo CD, see the dedicated [Argo CD Guide](ARGOCD.md). The chart is fully compatible with Argo CD, but requires special handling for encryption secrets to prevent key regeneration on every sync.
+
+Quick reference for Argo CD:
+```yaml
+spec:
+  source:
+    helm:
+      values: |
+        secrets:
+          existingSecretName: pwpush-pro-secrets  # Pre-create this secret
+```
+
 ## Editions
 
 | Feature | Starter | Advanced | Enterprise |
@@ -216,6 +230,8 @@ See the [examples/](examples/) directory for ready-to-use values files:
 - `advanced-external-storage.yaml` -- Advanced with S3 storage
 - `enterprise-ha.yaml` -- Enterprise HA with bundled PostgreSQL
 - `enterprise-external-db.yaml` -- Enterprise with external PostgreSQL (RDS, Cloud SQL, etc.)
+
+For Argo CD Application manifests, see the [Argo CD Guide](ARGOCD.md).
 
 ## Support
 
