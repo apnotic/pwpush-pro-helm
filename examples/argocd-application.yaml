@@ -1,0 +1,96 @@
+# Argo CD Application Example for Password Pusher Pro
+#
+# IMPORTANT: This example assumes you have pre-created the required secrets
+# in your target namespace. See ARGOCD.md for details on creating secrets.
+#
+# Usage:
+# 1. Update all placeholder values (your-license-key, your-region, host, etc.)
+# 2. Create the secret: kubectl create secret generic pwpush-pro-secrets ...
+# 3. Apply this manifest: kubectl apply -f argocd-application.yaml
+#
+# For production deployments, consider using ApplicationSet for multi-environment
+# management. See ARGOCD.md for advanced examples.
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pwpush-pro
+  namespace: argocd
+  finalizers:
+    # Ensures resources are properly cleaned up when the Application is deleted
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    chart: pwpush-pro
+    repoURL: https://apnotic.github.io/pwpush-pro-helm
+    # IMPORTANT: Pin to a specific version for reproducible deployments
+    targetRevision: 0.1.1
+    helm:
+      # Use the appropriate values file for your edition:
+      # - values.yaml (default, Starter)
+      # - values-advanced.yaml (Advanced edition)
+      # - values-enterprise.yaml (Enterprise edition)
+      valueFiles:
+        - values.yaml
+      # Override specific values for your deployment
+      values: |
+        # Reference the pre-created secret (see ARGOCD.md)
+        secrets:
+          existingSecretName: pwpush-pro-secrets
+        
+        # Your Password Pusher Pro license credentials
+        license:
+          key: "your-license-key"
+          region: "your-region"
+        
+        # Ingress configuration
+        ingress:
+          enabled: true
+          className: nginx
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+          hosts:
+            - host: pwpush.example.com
+              paths:
+                - path: /
+                  pathType: Prefix
+          tls:
+            - secretName: pwpush-tls
+              hosts:
+                - pwpush.example.com
+        
+        # Resource limits (adjust based on your workload)
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: pwpush
+  
+  syncPolicy:
+    automated:
+      # Automatically prune resources that are no longer defined in Git
+      prune: true
+      # Automatically sync when cluster state differs from Git
+      selfHeal: true
+      # Don't delete the Application if all resources are removed
+      allowEmpty: false
+    
+    syncOptions:
+      # Create the namespace if it doesn't exist
+      - CreateNamespace=true
+      # Retry failed syncs
+      - Retry=true
+    
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
