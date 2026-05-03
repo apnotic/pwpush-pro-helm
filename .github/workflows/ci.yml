@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  lint-and-template:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Add dependency repositories
+        run: helm repo add bitnami https://charts.bitnami.com/bitnami
+
+      - name: Update dependencies
+        run: helm dependency update charts/pwpush-pro
+
+      - name: Lint - Starter
+        run: helm lint charts/pwpush-pro --set license.key=test
+
+      - name: Lint - Advanced
+        run: helm lint charts/pwpush-pro -f charts/pwpush-pro/values-advanced.yaml --set license.key=test
+
+      - name: Lint - Enterprise
+        run: helm lint charts/pwpush-pro -f charts/pwpush-pro/values-enterprise.yaml --set license.key=test
+
+      - name: Template - Starter
+        run: helm template test-release charts/pwpush-pro --set license.key=test > /dev/null
+
+      - name: Template - Advanced
+        run: helm template test-release charts/pwpush-pro -f charts/pwpush-pro/values-advanced.yaml --set license.key=test > /dev/null
+
+      - name: Template - Enterprise
+        run: helm template test-release charts/pwpush-pro -f charts/pwpush-pro/values-enterprise.yaml --set license.key=test > /dev/null
