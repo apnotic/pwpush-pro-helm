@@ -2,7 +2,7 @@ apiVersion: v2
 name: pwpush-pro
 description: Password Pusher Pro - Securely exchange sensitive information with automatic expiration and deletion
 type: application
-version: 0.1.0
+version: 0.1.1
 appVersion: "latest"
 
 home: https://pwpush.com
