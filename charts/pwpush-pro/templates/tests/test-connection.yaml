@@ -7,9 +7,19 @@ metadata:
   annotations:
     "helm.sh/hook": test
 spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
   containers:
     - name: wget
-      image: busybox
+      image: busybox:1.37.0
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        readOnlyRootFilesystem: true
       command: ['wget']
       args: ['{{ include "pwpush-pro.fullname" . }}:{{ .Values.service.port }}/up']
   restartPolicy: Never
