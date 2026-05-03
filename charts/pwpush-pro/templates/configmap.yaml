@@ -1,3 +1,13 @@
+{{- /* Validate required and constrained values */}}
+{{- if and (ne .Values.database.type "sqlite") (ne .Values.database.type "postgresql") }}
+{{- fail (printf "Invalid database.type '%s'. Must be 'sqlite' or 'postgresql'." .Values.database.type) }}
+{{- end }}
+{{- if and (not .Values.secrets.existingSecretName) (not .Values.license.key) }}
+{{- fail "license.key is required. Provide it with --set license.key=YOUR_LICENSE_KEY" }}
+{{- end }}
+{{- if and (eq .Values.database.type "postgresql") (not .Values.postgresql.enabled) (not .Values.secrets.existingSecretName) (not .Values.database.host) }}
+{{- fail "database.host is required when database.type=postgresql and postgresql.enabled=false" }}
+{{- end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
