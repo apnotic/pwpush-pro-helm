@@ -85,7 +85,7 @@ Note: The `postgresql.auth.existingSecret` value follows the pattern `<release-n
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `license.key` | Password Pusher Pro license key (required) | `""` |
-| `license.region` | License region | `""` |
+| `license.region` | License region (required) | `""` |
 | `image.repository` | Container image repository | `registry.apnotic.com/pwpush-pro` |
 | `image.tag` | Container image tag | `latest` |
 | `imagePullSecrets` | Image pull secrets for private registry | `[]` |

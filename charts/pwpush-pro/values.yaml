@@ -16,7 +16,7 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
-# License configuration (required)
+# License configuration (both key and region are required)
 license:
   key: ""
   region: ""
