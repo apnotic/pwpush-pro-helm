@@ -170,7 +170,7 @@ Common Kustomize use cases:
 
 ## TLS / HTTPS
 
-TLS is handled by the Kubernetes Ingress controller, not the application container. When Ingress TLS is configured, the Ingress terminates HTTPS and forwards requests to the app over HTTP on port 80. Rails detects the original protocol via `X-Forwarded-Proto` headers from the Ingress.
+TLS is handled by the Kubernetes Ingress controller, not the application container. When Ingress TLS is configured, the Ingress terminates HTTPS and forwards requests to the app over HTTP on port 80. Password Pusher Pro detects the original protocol via `X-Forwarded-Proto` headers from the Ingress.
 
 For most deployments, configure TLS via Ingress with cert-manager:
 
