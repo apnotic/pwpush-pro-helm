@@ -1,6 +1,9 @@
 # Password Pusher Pro - Enterprise Edition Values
 #
-# Usage: helm install my-push pwpush-pro/pwpush-pro -f values-enterprise.yaml --set license.key=XXX
+# Usage:
+#   helm install my-push pwpush-pro/pwpush-pro -f values-enterprise.yaml \
+#     --set license.key=XXX \
+#     --set postgresql.auth.existingSecret=my-push-pwpush-pro
 
 edition: enterprise
 
@@ -20,7 +23,9 @@ postgresql:
   auth:
     username: pwpush-pro
     database: pwpush-pro
-    existingSecret: ""
+    secretKeys:
+      userPasswordKey: password
+      adminPasswordKey: postgres-password
   primary:
     initdb:
       scripts:
@@ -36,6 +41,8 @@ postgresql:
 
 storage:
   size: 10Gi
+  accessModes:
+    - ReadWriteMany
 
 resources:
   limits:

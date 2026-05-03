@@ -28,7 +28,17 @@ kubectl create secret docker-registry regcred \
   --docker-password=YOUR_PASSWORD
 ```
 
-### 3. Install
+### 3. Download Values File (Advanced/Enterprise only)
+
+```bash
+# For Advanced
+curl -O https://raw.githubusercontent.com/apnotic/pwpush-pro-helm/main/charts/pwpush-pro/values-advanced.yaml
+
+# For Enterprise
+curl -O https://raw.githubusercontent.com/apnotic/pwpush-pro-helm/main/charts/pwpush-pro/values-enterprise.yaml
+```
+
+### 4. Install
 
 **Starter Edition:**
 
@@ -42,7 +52,7 @@ helm install my-push pwpush-pro/pwpush-pro \
 
 ```bash
 helm install my-push pwpush-pro/pwpush-pro \
-  -f charts/pwpush-pro/values-advanced.yaml \
+  -f values-advanced.yaml \
   --set license.key=YOUR_LICENSE_KEY \
   --set imagePullSecrets[0].name=regcred
 ```
@@ -51,10 +61,13 @@ helm install my-push pwpush-pro/pwpush-pro \
 
 ```bash
 helm install my-push pwpush-pro/pwpush-pro \
-  -f charts/pwpush-pro/values-enterprise.yaml \
+  -f values-enterprise.yaml \
   --set license.key=YOUR_LICENSE_KEY \
-  --set imagePullSecrets[0].name=regcred
+  --set imagePullSecrets[0].name=regcred \
+  --set postgresql.auth.existingSecret=my-push-pwpush-pro
 ```
+
+Note: The `postgresql.auth.existingSecret` value follows the pattern `<release-name>-pwpush-pro`. Replace `my-push` with your chosen release name.
 
 ## Editions
 
@@ -113,8 +126,14 @@ helm install my-push pwpush-pro/pwpush-pro \
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `secrets.autoGenerate` | Auto-generate encryption keys on first install | `true` |
 | `secrets.existingSecretName` | Use an existing Kubernetes Secret | `""` |
+
+### Environment Variables
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `extraEnv` | Additional env vars in ConfigMap (non-sensitive only) | `{}` |
+| `extraSecretEnv` | Additional env vars in Secret (for sensitive values) | `{}` |
 
 ### Autoscaling
 
@@ -124,12 +143,6 @@ helm install my-push pwpush-pro/pwpush-pro \
 | `autoscaling.minReplicas` | Minimum replicas | `1` |
 | `autoscaling.maxReplicas` | Maximum replicas | `5` |
 | `autoscaling.targetCPUUtilizationPercentage` | Target CPU utilization | `70` |
-
-### Extra Environment Variables
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `extraEnv` | Additional environment variables (key-value map) | `{}` |
 
 ## TLS / HTTPS
 

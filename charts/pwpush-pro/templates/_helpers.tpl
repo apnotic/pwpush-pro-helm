@@ -73,14 +73,12 @@ PostgreSQL host - returns subchart service name or external host
 {{- end }}
 
 {{/*
-PostgreSQL password secret name
+Database credentials secret name (shared between app and Bitnami subchart)
+When using bundled PostgreSQL, the app Secret contains both app env vars
+and Bitnami-expected keys (password, postgres-password).
 */}}
-{{- define "pwpush-pro.postgresql.secretName" -}}
-{{- if and .Values.postgresql.enabled .Values.postgresql.auth.existingSecret }}
-{{- .Values.postgresql.auth.existingSecret }}
-{{- else if .Values.postgresql.enabled }}
-{{- printf "%s-postgresql" .Release.Name }}
-{{- else if .Values.database.existingSecretName }}
+{{- define "pwpush-pro.dbSecretName" -}}
+{{- if .Values.database.existingSecretName }}
 {{- .Values.database.existingSecretName }}
 {{- else }}
 {{- include "pwpush-pro.fullname" . }}

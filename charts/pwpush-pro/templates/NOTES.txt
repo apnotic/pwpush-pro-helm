@@ -10,6 +10,16 @@ WARNING: No license key provided. Set license.key to activate your installation:
 
 {{- end }}
 
+{{- if and (eq .Values.database.type "postgresql") .Values.postgresql.enabled (not .Values.postgresql.auth.existingSecret) }}
+
+WARNING: postgresql.auth.existingSecret is not set. The database password
+may not be synchronized between the app and PostgreSQL. Set it with:
+
+  helm upgrade {{ .Release.Name }} pwpush-pro/pwpush-pro \
+    --set postgresql.auth.existingSecret={{ include "pwpush-pro.dbSecretName" . }}
+
+{{- end }}
+
 1. Access your installation:
 
 {{- if .Values.ingress.enabled }}
@@ -40,6 +50,8 @@ WARNING: No license key provided. Set license.key to activate your installation:
   - {{ .Values.database.name | default "pwpush-pro" }}-cache
   - {{ .Values.database.name | default "pwpush-pro" }}-cable
   - {{ .Values.database.name | default "pwpush-pro" }}-queue
+
+  Database credentials secret: {{ include "pwpush-pro.dbSecretName" . }}
 {{- else }}
   Using external PostgreSQL at {{ .Values.database.host }}:{{ .Values.database.port }}
   Ensure the following databases exist:

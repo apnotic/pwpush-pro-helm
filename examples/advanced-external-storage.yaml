@@ -11,13 +11,15 @@ license:
 imagePullSecrets:
   - name: regcred
 
-# S3 storage configuration is set via environment variables
 extraEnv:
   ACTIVE_STORAGE_SERVICE: s3
-  AWS_ACCESS_KEY_ID: "YOUR_ACCESS_KEY"
-  AWS_SECRET_ACCESS_KEY: "YOUR_SECRET_KEY"
   AWS_REGION: "us-east-1"
   AWS_BUCKET: "pwpush-pro-files"
+
+# Sensitive credentials belong in extraSecretEnv (stored in K8s Secret, not ConfigMap)
+extraSecretEnv:
+  AWS_ACCESS_KEY_ID: "YOUR_ACCESS_KEY"
+  AWS_SECRET_ACCESS_KEY: "YOUR_SECRET_KEY"
 
 ingress:
   enabled: true

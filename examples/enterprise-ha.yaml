@@ -2,8 +2,9 @@
 #
 # Usage:
 #   helm install my-push pwpush-pro/pwpush-pro \
-#     -f charts/pwpush-pro/values-enterprise.yaml \
-#     -f examples/enterprise-ha.yaml
+#     -f values-enterprise.yaml \
+#     -f examples/enterprise-ha.yaml \
+#     --set postgresql.auth.existingSecret=my-push-pwpush-pro
 
 license:
   key: "YOUR_LICENSE_KEY"

@@ -20,14 +20,25 @@ spec:
       labels:
         {{- include "pwpush-pro.labels" . | nindent 8 }}
     spec:
+      serviceAccountName: {{ include "pwpush-pro.fullname" . }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           ports:
             - name: http
               containerPort: 80
@@ -37,11 +48,18 @@ spec:
                 name: {{ include "pwpush-pro.secretName" . }}
             - configMapRef:
                 name: {{ include "pwpush-pro.fullname" . }}-config
+          startupProbe:
+            httpGet:
+              path: /up
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 30
           livenessProbe:
             httpGet:
               path: /up
               port: http
-            initialDelaySeconds: 30
             periodSeconds: 30
             timeoutSeconds: 3
             failureThreshold: 3
@@ -49,7 +67,6 @@ spec:
             httpGet:
               path: /up
               port: http
-            initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 3
             failureThreshold: 3

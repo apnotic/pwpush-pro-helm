@@ -36,11 +36,13 @@ database:
 
 # Secrets configuration
 # Encryption keys are auto-generated on first install and preserved across upgrades.
+# To use a pre-existing Secret, set existingSecretName.
 secrets:
-  autoGenerate: true
   existingSecretName: ""  # Use an existing Secret instead of auto-generating
 
 # Persistent storage for file uploads (and SQLite DBs for starter/advanced)
+# For multi-replica deployments (Enterprise), use ReadWriteMany with a
+# compatible CSI driver (NFS, EFS, Azure Files, etc.)
 storage:
   size: 5Gi
   storageClassName: ""
@@ -79,10 +81,14 @@ resources: {}
 
 replicaCount: 1
 
-# Additional environment variables
+# Additional environment variables (non-sensitive, stored in ConfigMap)
+# WARNING: Do NOT put secrets (passwords, API keys) here. Use extraSecretEnv instead.
 extraEnv: {}
-  # TLS_DOMAIN: push.example.com
   # RAILS_LOG_LEVEL: debug
+
+# Additional secret environment variables (sensitive, stored in Secret)
+extraSecretEnv: {}
+  # AWS_SECRET_ACCESS_KEY: "your-secret-key"
 
 # PostgreSQL subchart (Bitnami)
 # Only used when database.type=postgresql
