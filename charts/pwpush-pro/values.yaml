@@ -1,0 +1,109 @@
+# Password Pusher Pro Helm Chart - Default Values (Starter Edition)
+#
+# This file contains the default values for the Starter tier.
+# For Advanced, use: helm install ... -f values-advanced.yaml
+# For Enterprise, use: helm install ... -f values-enterprise.yaml
+
+edition: starter
+
+image:
+  repository: registry.apnotic.com/pwpush-pro
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+# License configuration (required)
+license:
+  key: ""
+  region: ""
+
+# Database configuration
+# Starter and Advanced use SQLite (embedded).
+# Enterprise uses PostgreSQL (bundled subchart or external).
+database:
+  type: sqlite  # sqlite | postgresql
+  # PostgreSQL-specific (only used when database.type=postgresql)
+  host: ""
+  port: 5432
+  name: pwpush-pro
+  user: pwpush-pro
+  password: ""  # Auto-generated if empty and postgresql.enabled=true
+  existingSecretName: ""
+
+# Secrets configuration
+# Encryption keys are auto-generated on first install and preserved across upgrades.
+secrets:
+  autoGenerate: true
+  existingSecretName: ""  # Use an existing Secret instead of auto-generating
+
+# Persistent storage for file uploads (and SQLite DBs for starter/advanced)
+storage:
+  size: 5Gi
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 80
+
+# Ingress configuration
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  # cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts: []
+  # - host: push.example.com
+  #   paths:
+  #     - path: /
+  #       pathType: Prefix
+  tls: []
+  # - secretName: push-tls
+  #   hosts:
+  #     - push.example.com
+
+# Pod resource limits
+resources: {}
+  # limits:
+  #   cpu: 500m
+  #   memory: 512Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 256Mi
+
+replicaCount: 1
+
+# Additional environment variables
+extraEnv: {}
+  # TLS_DOMAIN: push.example.com
+  # RAILS_LOG_LEVEL: debug
+
+# PostgreSQL subchart (Bitnami)
+# Only used when database.type=postgresql
+postgresql:
+  enabled: false
+
+# Horizontal Pod Autoscaler
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+
+# Pod annotations
+podAnnotations: {}
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}

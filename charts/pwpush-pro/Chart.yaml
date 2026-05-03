@@ -1,0 +1,29 @@
+apiVersion: v2
+name: pwpush-pro
+description: Password Pusher Pro - Securely exchange sensitive information with automatic expiration and deletion
+type: application
+version: 0.1.0
+appVersion: "latest"
+
+home: https://pwpush.com
+icon: https://pwpush.com/logo.png
+sources:
+  - https://github.com/apnotic/pwpush-pro-helm
+
+maintainers:
+  - name: Apnotic
+    email: support@pwpush.com
+    url: https://apnotic.com
+
+keywords:
+  - password
+  - secret
+  - sharing
+  - security
+  - encryption
+
+dependencies:
+  - name: postgresql
+    version: "16.4.7"
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled

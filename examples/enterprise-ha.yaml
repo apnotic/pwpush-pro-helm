@@ -1,0 +1,52 @@
+# Enterprise Edition - High Availability with Bundled PostgreSQL
+#
+# Usage:
+#   helm install my-push pwpush-pro/pwpush-pro \
+#     -f charts/pwpush-pro/values-enterprise.yaml \
+#     -f examples/enterprise-ha.yaml
+
+license:
+  key: "YOUR_LICENSE_KEY"
+
+imagePullSecrets:
+  - name: regcred
+
+replicaCount: 3
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 60
+
+resources:
+  limits:
+    cpu: 4000m
+    memory: 4Gi
+  requests:
+    cpu: 1000m
+    memory: 2Gi
+
+postgresql:
+  enabled: true
+  primary:
+    persistence:
+      size: 50Gi
+
+storage:
+  size: 50Gi
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: push.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: push-tls
+      hosts:
+        - push.example.com

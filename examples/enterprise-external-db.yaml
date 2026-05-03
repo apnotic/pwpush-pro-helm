@@ -1,0 +1,46 @@
+# Enterprise Edition - External PostgreSQL (RDS, Cloud SQL, Azure Database, etc.)
+#
+# Usage:
+#   helm install my-push pwpush-pro/pwpush-pro \
+#     -f charts/pwpush-pro/values-enterprise.yaml \
+#     -f examples/enterprise-external-db.yaml
+#
+# Prerequisites:
+#   Create 4 databases on your PostgreSQL server:
+#     - pwpush-pro
+#     - pwpush-pro-cache
+#     - pwpush-pro-cable
+#     - pwpush-pro-queue
+
+license:
+  key: "YOUR_LICENSE_KEY"
+
+imagePullSecrets:
+  - name: regcred
+
+database:
+  type: postgresql
+  host: "your-db-host.region.rds.amazonaws.com"
+  port: 5432
+  name: pwpush-pro
+  user: pwpush_pro
+  password: "YOUR_DB_PASSWORD"
+
+# Disable bundled PostgreSQL since we're using external
+postgresql:
+  enabled: false
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: push.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: push-tls
+      hosts:
+        - push.example.com

@@ -1,0 +1,25 @@
+# Starter Edition - Minimal Configuration
+#
+# Usage:
+#   helm install my-push pwpush-pro/pwpush-pro -f examples/starter-minimal.yaml
+
+license:
+  key: "YOUR_LICENSE_KEY"
+
+imagePullSecrets:
+  - name: regcred
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: push.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: push-tls
+      hosts:
+        - push.example.com

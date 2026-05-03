@@ -1,0 +1,54 @@
+
+Password Pusher Pro - {{ .Values.edition | default "starter" | title }} Edition
+=====================================================================
+
+{{- if not .Values.license.key }}
+
+WARNING: No license key provided. Set license.key to activate your installation:
+
+  helm upgrade {{ .Release.Name }} pwpush-pro/pwpush-pro --set license.key=YOUR_KEY
+
+{{- end }}
+
+1. Access your installation:
+
+{{- if .Values.ingress.enabled }}
+{{- range .Values.ingress.hosts }}
+  https://{{ .host }}
+{{- end }}
+{{- else if contains "LoadBalancer" .Values.service.type }}
+  NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+  Watch status with: kubectl get svc {{ include "pwpush-pro.fullname" . }} -w
+{{- else }}
+  kubectl port-forward svc/{{ include "pwpush-pro.fullname" . }} 8080:{{ .Values.service.port }}
+  Then open: http://localhost:8080
+{{- end }}
+
+2. CRITICAL - Back up your encryption secrets:
+
+  kubectl get secret {{ include "pwpush-pro.secretName" . }} -n {{ .Release.Namespace }} -o yaml > pwpush-pro-secrets-backup.yaml
+
+  Store this file securely. If you lose these keys, all encrypted data
+  becomes permanently inaccessible.
+
+{{- if eq .Values.database.type "postgresql" }}
+
+3. Database:
+{{- if .Values.postgresql.enabled }}
+  PostgreSQL is deployed via subchart with 4 databases:
+  - {{ .Values.database.name | default "pwpush-pro" }} (primary)
+  - {{ .Values.database.name | default "pwpush-pro" }}-cache
+  - {{ .Values.database.name | default "pwpush-pro" }}-cable
+  - {{ .Values.database.name | default "pwpush-pro" }}-queue
+{{- else }}
+  Using external PostgreSQL at {{ .Values.database.host }}:{{ .Values.database.port }}
+  Ensure the following databases exist:
+  - {{ .Values.database.name | default "pwpush-pro" }}
+  - {{ .Values.database.name | default "pwpush-pro" }}-cache
+  - {{ .Values.database.name | default "pwpush-pro" }}-cable
+  - {{ .Values.database.name | default "pwpush-pro" }}-queue
+{{- end }}
+{{- end }}
+
+Documentation: https://docs.pwpush.com
+Support: https://docs.pwpush.com/docs/support/

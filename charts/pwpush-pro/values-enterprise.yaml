@@ -1,0 +1,54 @@
+# Password Pusher Pro - Enterprise Edition Values
+#
+# Usage: helm install my-push pwpush-pro/pwpush-pro -f values-enterprise.yaml --set license.key=XXX
+
+edition: enterprise
+
+image:
+  repository: registry.apnotic.com/pwpush-pro-enterprise
+
+database:
+  type: postgresql
+  name: pwpush-pro
+  user: pwpush-pro
+  password: ""  # Auto-generated if empty
+
+postgresql:
+  enabled: true
+  image:
+    tag: "17-alpine"
+  auth:
+    username: pwpush-pro
+    database: pwpush-pro
+    existingSecret: ""
+  primary:
+    initdb:
+      scripts:
+        create-dbs.sql: |
+          CREATE DATABASE "pwpush-pro-cache";
+          CREATE DATABASE "pwpush-pro-cable";
+          CREATE DATABASE "pwpush-pro-queue";
+          GRANT ALL PRIVILEGES ON DATABASE "pwpush-pro-cache" TO "pwpush-pro";
+          GRANT ALL PRIVILEGES ON DATABASE "pwpush-pro-cable" TO "pwpush-pro";
+          GRANT ALL PRIVILEGES ON DATABASE "pwpush-pro-queue" TO "pwpush-pro";
+    persistence:
+      size: 10Gi
+
+storage:
+  size: 10Gi
+
+resources:
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+
+replicaCount: 2
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
